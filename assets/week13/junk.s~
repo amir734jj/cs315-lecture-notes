@@ -1,7 +1,0 @@
-            .text
-        main:
-            li $t0, -1024
-            abs $t1, $t0
-            add $t2, $t0, $t1
-
-            b main
