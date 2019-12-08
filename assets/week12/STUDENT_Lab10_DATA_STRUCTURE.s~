@@ -1,0 +1,304 @@
+###########################################################
+#       Lab 10 - data structures
+#
+#   Name:
+#   Date:
+#
+#   Description:
+#       1. call create_array to create an array of data structures
+#       2. call print_table to print a table of the data structures
+#       3. call get_stats to get information about all data structures in the array
+#
+#   High level design:
+#       from main call: <-- array base address, array size <-- create_array()
+#           from create_array call: null <-- read_array(array base address, array size)
+#
+#       from main call: null <-- print_table(array base address, array size)
+#
+#       from main call: array sum, array average <-- get_stats(array base address, array size)
+#
+#       from main: print array sum
+#       from main: print array average
+#
+#   Data structure:
+#       offset 0 --> double-precision value
+#       offset 8 --> integer value
+#
+#   Design:
+#       [[1.5 1], [2.5 2], [3.5, 3]]
+#   
+#   Formula:
+#       sum = (1.5 * 1) + (2.5 * 2) + (3.5 * 3) = 17
+#       average = (1.5 * 1) + (2.5 * 2) + (3.5 * 3) / 3 = 5.6
+#       
+###########################################################
+        .data
+average_p:      .asciiz "Average: "
+total_p:        .asciiz "Total: "
+
+# declare words to hold dynamic array base and array size
+array_pointer_p:      .word 0   # holds address dynamic array pointer (address)
+array_size_p:         .word 0   # hold size of dynamic array (value)
+###########################################################
+        .text
+main:
+# calling a subprogram create_array to dynamically allocate data structure
+    addi $sp, $sp, -4           # allocate one word for $ra
+    sw $ra, 0($sp)              # store $ra on stack
+
+                                # no register to backup in the stack
+                            
+    addi $sp, $sp, -8           # allocate words for the arguments
+                                # arguments IN: NONE
+                                # arguments OUT: array base address, array size <-- 2 words
+                                
+    jal create_array            # call subprogram create_array
+    
+    lw $t0, 0($sp)              # read array base address from stack
+    lw $t1, 4($sp)              # read array size from stack
+    addi $sp, $sp, 8            # deallocate words for the arguments
+    
+                                # we did not backup a register, so there is no register restoring 
+    
+    lw $ra, 0($sp)              # load $ra from stack
+    addi $sp, $sp, 4            # deallocate word for $ra
+
+
+    
+# store array base address and array size into static variables
+    la $t9, array_pointer_p     # store array base address into static variable
+    sw $t0, 0($t9)
+
+    la $t9, array_size_p        # store array base size into static variable
+    sw $t1, 0($t9)
+
+
+# calling a subprogram print_table to print the data structures
+
+# restore array base address and array size from static variables
+    la $t9, array_pointer_p     # store array base address into static variable
+    lw $t0, 0($t9)
+
+    la $t9, array_size_p        # store array base size into static variable
+    lw $t1, 0($t9)  
+    
+    addi $sp, $sp, -4           # allocate one word for $ra
+    sw $ra, 0($sp)              # store $ra on stack
+
+                                # no register to backup in the stack
+                            
+    addi $sp, $sp, -8           # allocate words for the arguments
+                                # arguments IN: array base address, array size  <-- 2 words
+                                # arguments OUT: NONE
+                                    
+    sw $t0, 0($sp)              # store array base address on stack
+    sw $t1, 4($sp)              # store array size on stack
+
+    jal print_table             # call subprogram print_table
+
+    addi $sp, $sp, 8            # deallocate words for the arguments
+    
+                                # we did not backup a register, so there is no register restoring 
+    
+    lw $ra, 0($sp)              # load $ra from stack
+    addi $sp, $sp, 4            # deallocate word for $ra
+    
+    
+    
+# calling a subprogram get_stats to get statistics about the data structures (sum and average)
+
+# restore array base address and array size from static variables
+    la $t9, array_pointer_p     # store array base address into static variable
+    lw $t0, 0($t9)
+    la $t9, array_size_p        # store array base size into static variable
+    lw $t1, 0($t9)  
+    
+    addi $sp, $sp, -4           # allocate one word for $ra
+    sw $ra, 0($sp)              # store $ra on stack
+
+                                # no register to backup in the stack
+                            
+    addi $sp, $sp, -24          # allocate words for the arguments
+                                #   2 arguments IN:     array base address, array size
+                                #   2 arguments OUT:    array sum and array average
+                                
+    sw $t0, 0($sp)              # store array base address on stack
+    sw $t1, 4($sp)              # store array size on stack
+
+    jal get_stats               # call subprogram get_stats
+
+    l.d $f0, 8($sp)             # load array sum from stack
+    l.d $f2, 16($sp)            # load array average from stack
+    
+    addi $sp, $sp, 24           # deallocate words for the arguments
+    
+                                # we did not backup a register, so there is no register restoring 
+    
+    lw $ra, 0($sp)              # load $ra from stack
+    addi $sp, $sp, 4            # deallocate word for $ra
+
+
+# print array sum and array average 
+
+# print new line character  
+    li $a0, 10                  # print new line character (ASCII code 10)
+    li $v0, 11
+    syscall 
+    
+    li $v0, 4                   # array sum is:
+    la $a0, total_p
+    syscall
+    
+    li $v0, 3                   # print array sum value
+    mov.d $f12, $f0
+    syscall
+
+# print new line character  
+    li $a0, 10                  # print new line character (ASCII code 10)
+    li $v0, 11
+    syscall 
+    
+    li $v0, 4                   # array average is:
+    la $a0, average_p
+    syscall
+    
+    li $v0, 3                   # print array average value
+    mov.d $f12, $f2
+    syscall
+    
+mainEnd:
+    li $v0, 10
+    syscall                     # Halt
+###########################################################
+#       create_array subprogram
+#
+#   Subprogram description:
+#       1) ask the user for an array length
+#       2) call read_array to fill the array
+#
+#  Example:
+#    data structure:  [12.4  3] [8.2  9] [3.0 2]
+#
+###########################################################
+#       Arguments IN and OUT of subprogram
+#   $sp+0   Holds array base address (OUT)
+#   $sp+4   Holds array length (OUT)
+###########################################################
+#       Register Usage
+#   $t0     Holds array index address
+#   $t1     Holds array length/loop countdown
+#   $t2     constant value 12
+###########################################################
+        .data
+create_array_length_p:  .asciiz "Enter an array length (or data structure size):  "
+create_array_invalid_p: .asciiz "Invalid length\n"
+###########################################################
+        .text
+create_array:
+
+    
+create_array_end:   
+    jr $ra                      # jump back to the main
+###########################################################
+#       read_array subprogram
+#
+#   Subprogram description:
+#       1) reads data structures into the array until the array is full
+#       2) store integer and double at the correct offsets (0 for the double, 8 for the integer)
+#
+#  Example:
+#    data structure:  [12.4  3] [8.2  9] [3.0 2]
+#
+###########################################################
+#       Arguments IN and OUT of subprogram
+#   $sp+0   Holds array base address (IN)
+#   $sp+4   Holds array length (IN)
+###########################################################
+#       Register Usage
+#   $t0     Holds array index address
+#   $t1     Holds array length/loop countdown
+###########################################################
+        .data
+read_array_integer_p:  .asciiz "Enter an integer: "
+read_array_double_p:   .asciiz "Enter a double: "
+###########################################################
+        .text
+read_array:
+
+    
+read_array_end:
+    jr $ra                      # jump back to the main
+###########################################################
+#       print_table subprogram
+#
+#   Subprogram description:
+#       1) prints all data structures in the array
+#       2) prints the doubles followed by the integer, separated by four spaces
+#  
+#   Note:
+#       ASCII code 9 is a horizontal tab.
+#       ASCII code 10 is a newline character.
+#       system call to print a character is: 11
+#
+#   Example:
+#       12.4    3
+#       8.2     9
+#       3.0     2
+###########################################################
+#       Arguments IN and OUT of subprogram
+#   $sp+0   Holds array base address (IN)
+#   $sp+4   Holds array length (IN)
+###########################################################
+#       Register Usage
+#   $t0     Holds array index address
+#   $t1     Holds array length/loop countdown
+###########################################################
+        .data
+print_table_structs_p:  .asciiz "Data table:\n"
+###########################################################
+        .text
+print_table:
+
+    
+print_table_end:
+    jr $ra                      # jump back to the main
+###########################################################
+#       get_stats subprogram
+#
+#   Subprogram description:
+#       1) calculates average and total value of array
+#       2) average is the sum of all doubles divided by the number of elements in the array
+#       3) total is the sum of all doubles, each multiplied by integer in the same data structure
+#
+#   Example:
+#       data structures:  [[12.4  3], [8.2  9], [3.0 2]]
+#       sum: (12.4 * 3) + (8.2 * 9) + (3.0 * 2)
+#       average:  ((12.4 * 3) + (8.2 * 9) + (3.0 * 2)) / 3
+#
+###########################################################
+#       Arguments IN and OUT of subprogram
+#   $sp+0   Holds array base address (IN)
+#   $sp+4   Holds array length (IN)
+#   $sp+8   Holds sum value of array (OUT)
+#   $sp+16  Holds average value of all doubles (OUT)
+###########################################################
+#       Register Usage
+#   $t0     Holds array index address
+#   $t1     Holds array length/loop countdown
+#   $t2     Holds Integer from structure
+#   $f4|$f5 Holds array sum (double * integer)
+#   $f6|$f7 Holds array average (double * integer) / count
+#   $f8|$f9 Holds array size in double
+#   $f10|$f11   Holds array value / TEMP
+#   $f12|$f13   TEMP
+###########################################################
+        .data
+###########################################################
+        .text
+get_stats:
+ 
+ 
+get_stats_end:
+    
+    jr $ra                      # jump back to the main
+###########################################################

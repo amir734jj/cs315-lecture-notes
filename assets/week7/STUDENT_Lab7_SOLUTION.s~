@@ -1,0 +1,542 @@
+###########################################################
+#       Lab 7 - Stack
+#   Name:
+#   Date:
+#
+#   TODO:
+#       modify solution of Program 2 so that it uses stack to pass arguments    
+#       IN and OUT. again, $a and $v registers should not be used to pass arguments.
+#       only stack should be used. Please do not modify the logic of code,
+#       only change what is needed to use stack.
+#
+#   Note:
+#       before modifying the exisitng code, make sure it runs and works fine.
+#       then start modifying the code. thereafter, re-run and re-test the code,
+#       and checkout with your TA.
+#
+#   Description of Program 2:
+#       Write an assembly program that asks for the number of integers to be read.
+#       It then dynamically allocates an array of that size. It will stop reading
+#       integers when the array is full. After the all the integers are read and valid,
+#       the program displays the entries in reverse order, the sum of the entries, and
+#       the average of the entries to 5 decimal places using only MIPS Integer commands.
+#       There will be at least 4 subprograms.
+#
+###########################################################
+#       Register Usage
+#   $t0     Holds array base address (temporarily)
+#   $t1     Holds array size (temporarily)
+#   $t2     Holds array sum (temporarily)
+#   $t3
+#   $t4
+#   $t5
+#   $t6
+#   $t7
+#   $t8
+#   $t9     temporarily
+###########################################################
+        .data
+array_pointer_p:        .word 0     # holds address of dynamic array (address)
+array_size_p:           .word 0     # hold size of dynamic array (value)        
+array_sum_p:            .word 0     # sum variable initialized to 0
+###########################################################
+        .text
+main:
+# calling subprogram read_values
+    addiu $sp, $sp, -4                  # allocate one word for $ra
+    sw $ra, 0($sp)                      # store $ra in stack
+
+                                        # no register to backup in the stack
+
+    addiu $sp, $sp, -8                  # allocate words for the arguments IN & OUT
+                                        # arguments IN: NONE
+                                        # arguments OUT: array base address, size
+
+    jal allocate_array                  # call allocate_array subprogram
+                                        # arguments IN: NONE
+                                        # arguments OUT: array base address and size
+                                        
+    lw $t0, 0($sp)                      # load retruned array base address into $t0
+    lw $t1, 4($sp)                      # load returned array size into $t1
+
+    addiu $sp, $sp, 8                   # de-allocate words for the arguments IN & OUT
+    
+                                        # we did not backup a register, so there is no register restoring
+
+    lw $ra, 0($sp)                      # load $ra from stack
+    addiu $sp, $sp, 4                   # deallocate word for $ra
+                 
+                                    
+# store returned values (array base address & size) into static variables
+    la $t9, array_pointer_p             # load the address of variable array_pointer_p into register $t9
+    sw $t0, 0($t9)                      # store the true address of dynamic array into static variable
+                                        # memory[0 + array_pointer_p] <-- $t0
+    
+    la $t9, array_size_p                # load the address of variable array_size_p into register $t9
+    sw $t1, 0($t9)                      # store value of array into static variable
+                                        # memory[0 + array_size_p] <-- $t1
+
+
+# load array base address & size from static variables
+    la $t9, array_pointer_p             # load the address of variable array_pointer_p into register $t9
+    lw $t0, 0($t9)                      # load the true address of dynamic array into static variable
+                                        # $a0 <-- memory[0 + array_pointer_p]
+    
+    la $t9, array_size_p                # load the address of variable array_size_p into register $t9
+    lw $t1, 0($t9)                      # store value of array into static variable
+                                        # $a1 <-- memory[0 + array_size_p]
+
+
+# calling subprogram read_values
+    addiu $sp, $sp, -4                  # allocate one word for $ra
+    sw $ra, 0($sp)                      # store $ra in stack
+
+                                        # no register to backup in the stack
+
+    addiu $sp, $sp, -12                 # allocate words for the arguments IN & OUT
+                                        # arguments IN: array base address, size
+                                        # arguments OUT: array sum
+                                        
+    sw $t0, 0($sp)                      # put array base address as argument IN on the stack
+    sw $t1, 4($sp)                      # put array size as argument IN on the stack
+    
+
+    jal read_values                     # call read_values subprogram
+                                        # arguments IN: array base address and size
+                                        # arguments OUT: array sum
+                                        
+    lw $t2, 8($sp)                      # load returned array sum into $t2
+
+    addiu $sp, $sp, 12                  # de-allocate words for the arguments IN & OUT
+    
+                                        # we did not backup a register, so there is no register restoring
+
+    lw $ra, 0($sp)                      # load $ra from stack
+    addiu $sp, $sp, 4                   # deallocate word for $ra
+    
+    
+# store returned values (array sum) into static variables
+    la $t9, array_sum_p                 # load the address of variable array_sum_p into register $t9
+    sw $t2, 0($t9)                      # store value of array sum into static variable
+                                        # memory[0 + array_sum_p] <-- $t2
+    
+    
+# load array base address & size from static variables
+    la $t9, array_pointer_p             # load the address of variable array_pointer_p into register $t9
+    lw $t0, 0($t9)                      # load the true address of dynamic array into static variable
+                                        # $t0 <-- memory[0 + array_pointer_p]
+    
+    la $t9, array_size_p                # load the address of variable array_size_p into register $t9
+    lw $t1, 0($t9)                      # store value of array into static variable
+                                        # $t1 <-- memory[0 + array_size_p]
+
+
+# calling subprogram read_values
+    addiu $sp, $sp, -4                  # allocate one word for $ra
+    sw $ra, 0($sp)                      # store $ra in stack
+
+                                        # no register to backup in the stack
+
+    addiu $sp, $sp, -8                  # allocate words for the arguments IN & OUT
+                                        # arguments IN: array base address, size
+                                        # arguments OUT: NONE
+
+    sw $t0, 0($sp)                      # put array base address as argument IN on the stack
+    sw $t1, 4($sp)                      # put array size as argument IN on the stack
+                         
+    jal print_backwards                 # call read_values subprogram
+                                        # arguments IN: array base address and size
+                                        # arguments OUT: NONE
+
+    addiu $sp, $sp, 8                   # de-allocate words for the arguments IN & OUT
+    
+                                        # we did not backup a register, so there is no register restoring
+
+    lw $ra, 0($sp)                      # load $ra from stack
+    addiu $sp, $sp, 4                   # deallocate word for $ra                                        
+                                         
+# load array sum & size from static variables
+    la $t9, array_sum_p                 # load the address of variable array_sum_p into register $t9
+    lw $t2, 0($t9)                      # load value of array sum into static variable
+                                        # $a0 <-- memory[0 + array_sum_p]
+    
+    la $t9, array_size_p                # load the address of variable array_size_p into register $t9
+    lw $t1, 0($t9)                      # store value of array size into static variable
+                                        # $a1 <-- memory[0 + array_size_p]
+
+
+# calling subprogram read_values
+    addiu $sp, $sp, -4                  # allocate one word for $ra
+    sw $ra, 0($sp)                      # store $ra in stack
+
+                                        # no register to backup in the stack
+
+    addiu $sp, $sp, -8                  # allocate words for the arguments IN & OUT
+                                        # arguments IN: array base address, size
+                                        # arguments OUT: NONE
+                                        
+    sw $t2, 0($sp)                      # put array sum as argument IN on the stack
+    sw $t1, 4($sp)                      # put array size as argument IN on the stack
+                         
+    jal print_average                   # call read_values subprogram
+                                        # arguments IN: array sum and size
+                                        # arguments OUT: NONE
+                                        
+    addiu $sp, $sp, 8                   # de-allocate words for the arguments IN & OUT
+    
+                                        # we did not backup a register, so there is no register restoring
+
+    lw $ra, 0($sp)                      # load $ra from stack
+    addiu $sp, $sp, 4                   # deallocate word for $ra
+    
+mainEnd:    
+    li $v0, 10                          # halt
+    syscall
+###########################################################
+#       allocate_array subprogram
+#
+#   Subprogram description:
+#       The first subprogram 'allocate_array' will ask the user for the number of integers to be
+#       read and dynamically declares an array to hold them. It receives no arguments IN and
+#       has two arguments OUT, the base address of the dynamically declared array and it size.
+#       Do not forget to validate array size (array size should be greater than zero).
+#
+###########################################################
+#       Arguments IN and OUT of subprogram
+#   $a0
+#   $a1
+#   $a2
+#   $a3
+#   $v0
+#   $v1     
+#   $sp     Holds array pointer (address)
+#   $sp+4   Holds array size (value)
+#   $sp+8
+#   $sp+12
+###########################################################
+		.data
+allocate_array_prompt_p:    .asciiz "Enter size of the array to allocate (greater than 0): "
+allocate_array_invalid_p:   .asciiz "Array size you entered is incorrect (array size should be greater than zero)\n"
+###########################################################
+		.text
+allocate_array:
+
+allocate_array_loop:
+	li $v0, 4                           # prompt for array size
+	la $a0, allocate_array_prompt_p
+	syscall
+
+	li $v0, 5                           # reads integer for array size
+	syscall
+
+	blez $v0, allocate_array_invalid_size   # branch to error section as array size is less than or equal to zero
+
+	move $t2, $v0                       # store valid array size in register $t2
+
+	li $v0, 9                           # dynamically allocate an array (using system call 9)
+	move $a0, $t2                       # puts array size in register $a0
+	sll $a0, $a0, 2                     # multiply array size by 4, as word in MIPS is 4 bytes
+	syscall
+
+	b allocate_array_end                # branch unconditionally to the end of subprogram
+
+allocate_array_invalid_size:
+	li $v0, 4                           # prints an error saying that array size is less than or equal to zero
+	la $a0, allocate_array_invalid_p
+	syscall
+
+	b allocate_array_loop               # branch unconditionally back to beginning of the loop
+
+allocate_array_end:
+    sw $v0, 0($sp)                      # return address of dynamic array in $sp + 0 (array_pointer)
+    sw $t2, 4($sp)                      # store size of dynamic array in $sp + 4 (array_size)
+
+    jr $ra                              # jump back to the main
+###########################################################
+#       read_values subprogram
+#
+#   Subprogram description:
+#       The second subprogram 'read_values' which receives two arguments IN, the array base address
+#       and its size. Also, it makes sure entered numbers are between -100 and +100 inclusive. It returns
+#       (OUT) the sum of valid numbers read in the appropriate registers.
+#
+###########################################################
+#       Arguments IN and OUT of subprogram
+#   $a0
+#   $a1
+#   $a2
+#   $a3
+#   $v0
+#   $v1
+#   $sp       Holds array pointer (address)         
+#   $sp+4     Holds array size (value)
+#   $sp+8     Holds sum
+#   $sp+12
+###########################################################
+#       Register Usage
+#   $t0     Holds array base address / array pointer
+#   $t1     Holds array size / loop count down
+#   $t2     Holds sum
+#   $t3     Holds value -100
+#   $t4     Holds value 100
+###########################################################
+		.data
+read_values_prompt_p:   .asciiz "Enter a value between (-100 to +100) exclusive: "
+read_values_invalid_p:  .asciiz "Invalid entry\n"
+###########################################################
+        .text
+read_values:
+# store arguments IN into temporarily registers so we don't lose them
+    lw $t0, 0($sp)                      # array base address        
+    lw $t1, 4($sp)                      # array size
+    
+# initialization
+	li $t2, 0                           # initialize sum to 0
+	li $t3, -100                        # holds value -100
+	li $t4, 100                         # holds value 100
+
+read_values_loop:
+	blez $t1, read_values_exit_loop     # branch to the read_values_exit_loop if loop counter is
+										# less than or equal to zero
+
+	li $v0, 4                           # prompts to enter a value
+	la $a0, read_values_prompt_p
+	syscall
+
+	li $v0, 5                           # reads an integer value
+	syscall
+
+	bgt $v0, $t4, read_values_error     # branch to the error if value if greater
+										# than or equal to 100
+
+	blt $v0, $t3, read_values_error     # branch to the error if value if less
+										# than or equal to -100
+
+	add $t2, $t2, $v0                   # adds the number to the sum
+
+	sw $v0, 0($t0)                      # store the number in the array
+
+	addi $t0, $t0, 4                    # increment array pointer (address) to next word (each word is 4 bytes)
+	addi $t1, $t1, -1                   # decrement array count down (index)  by 1
+
+	b read_values_no_error              # branch unconditionally to no_error label to
+										# skip printing error massage for valid entries
+
+read_values_error:
+	li $v0, 4                           # prints an error message
+	la $a0, read_values_invalid_p
+	syscall
+
+read_values_no_error:
+	b read_values_loop                  # branch unconditionally to the beginning of the loop
+
+read_values_exit_loop:
+    sw $t2, 8($sp)                      # return sum in $sp + 8
+
+read_values_end:
+    jr $ra                              # jump back to the main
+###########################################################
+#      print_backwards subprogram
+#
+#   Subprogram description:
+#       The third subprogram 'print_backwards' receives as arguments IN the base address of the
+#       array and its size. It has no arguments OUT. It outputs the array in reverse order one number
+#       per line at a time.
+#
+###########################################################
+#       Arguments IN and OUT of subprogram
+#   $a0
+#   $a1
+#   $a2
+#   $a3
+#   $v0
+#   $v1
+#   $sp     Holds array pointer (address)
+#   $sp+4   Holds array size (value)
+#   $sp+8
+#   $sp+12
+###########################################################
+#       Register Usage
+#   $t0     Holds array base address / array pointer
+#   $t1     Holds array size / loop count down
+#   $t2     temporarily
+###########################################################
+        .data
+print_backwards_array_p:    .asciiz     "Array (in backwards): "
+print_backwards_nextline_p: .asciiz     "\n" 
+###########################################################
+        .text
+print_backwards:
+# store arguments IN into temporarily registers so we don't lose them
+    lw $t0, 0($sp)                      # move array pointer (address) to $t0
+    lw $t1, 4($sp)                      # move array size (value) to $t1
+
+# adjust array base address: new base address = old base address + 4 * (count - 1)
+    add $t2, $t1, -1                    # adjust count (n) to last element index (n-1)
+    sll $t2, $t2, 2                     # multiply element index number by element size (4 bytes)
+    add $t0, $t0, $t2                   # address of last element
+    
+    li $v0, 4                           # prints array is:
+    la $a0, print_backwards_array_p
+    syscall
+    
+    li $v0, 4                           # prints nextline ("\n")
+    la $a0, print_backwards_nextline_p
+    syscall
+    
+print_backwards_loop:
+    blez $t1, print_backwards_exit_loop # branch to print_backwards_exit_loop if counter is less than or equal to zero
+    
+# print value from array
+    li $v0, 1
+    lw $a0, 0($t0)                      # $a0 <-- memory[$t0 + 0] // load a value from memory to register $a0
+    syscall
+    
+    li $v0, 4                           # prints nextline ("\n")
+    la $a0, print_backwards_nextline_p
+    syscall
+    
+    addi $t0, $t0, -4                   # decrement array pointer (address) to next word (each word is 4 bytes)
+    addi $t1, $t1, -1                   # decrement array counter (index)
+    
+    b print_backwards_loop              # branch unconditionally back to beginning of the loop
+    
+print_backwards_exit_loop:
+    li $v0, 4                           # prints nextline ("\n")
+    la $a0, print_backwards_nextline_p
+    syscall
+ 
+print_backwards_end:    
+    jr $ra                              # jump back to the main
+###########################################################
+#      print_average subprogram
+#
+#   Subprogram description:
+#       The fourth subprogram 'print_average' which receives as arguments IN the 'total' and 'count'
+#       and has no arguments OUT. It outputs the average of the numbers read to 6 decimal places using
+#       only integer commands. You will declare and use static variables to hold the base address of the
+#       array, count of element, and the sum of values of the elements.
+#
+###########################################################
+#       Arguments IN and OUT of subprogram
+#   $a0
+#   $a1
+#   $a2
+#   $a3
+#   $v0
+#   $v1
+#   $sp     Holds array sum (value)
+#   $sp+4   Holds array size (value)
+#   $sp+8
+#   $sp+12
+###########################################################
+#       Register Usage
+#   $t0     holds sum/remainder
+#   $t1     holds count
+#   $t2     holds default number of decimal points (constant value 7)
+#   $t3     holds constant value 10
+###########################################################
+		.data
+print_average_sum_p:        .asciiz     "Given sum: "
+print_average_count_p:      .asciiz     "Given count: "
+print_average_average_p:    .asciiz     "Array average (up-to 6 decimal points using integer instructions): "
+print_average_minus_p:		.asciiz		"-"
+print_average_nextline_p:   .asciiz     "\n"
+###########################################################
+        .text
+print_average:
+# store arguments IN into temporarily registers so we don't lose them
+    lw $t0, 0($sp)                      # move array sum to $t0
+    lw $t1, 4($sp)                      # move array size (value) to $t1
+
+# initialization
+	li $t2, 6                           # calculate average up-to 6 digit accuracy
+	li $t3, 10                          # initialize $t2 to constant value 10
+
+# print sum
+	li $v0, 4                           # print sum is:
+	la $a0, print_average_sum_p
+	syscall
+
+	li $v0, 1                           # print sum value
+	move $a0, $t0
+	syscall
+
+# print nextline
+	li $v0, 4                           # prints nextline ("\n")
+	la $a0, print_average_nextline_p
+	syscall
+
+# print count
+	li $v0, 4                           # print count is:
+	la $a0, print_average_count_p
+	syscall
+
+	li $v0, 1                           # print count value
+	move $a0, $t1
+	syscall
+
+# print nextline
+	li $v0, 4                           # prints nextline ("\n")
+	la $a0, print_average_nextline_p
+	syscall
+
+# print average
+	li $v0, 4                           # print average is:
+	la $a0, print_average_average_p
+	syscall
+
+	bgez $t0, print_average_positive	# if sum >= 0 then branch to positive
+
+print_average_negative:
+	li $v0, 4                           # print minus character
+	la $a0, print_average_minus_p
+	syscall
+
+	abs $t0, $t0						# sum <-- abs(sum)
+
+print_average_positive:
+	div $t0, $t1                        # divide sum by count
+	mflo $a0                            # put quotient in register $a0
+	mfhi $t0                            # put remainder in register $t0
+
+	li $v0, 1                           # print quotient
+	syscall
+
+	li $v0, 11                          # print period character (ASCII character 46)
+	li $a0, 46
+	syscall
+
+# *** method #1
+# multiply remainder of previous division by 10^7 and divide it with count
+	li $t9, 1000000                     # $t9 <-- 10^6
+	mul $t0, $t0, $t9                   # $t0 <-- remainder * $t9
+	div $a0, $t0, $t1                   # $a0 <-- $t0 / count
+
+	li $v0, 1                           # print the quotient
+	syscall
+
+
+# NOTE:
+#   alternative method to find decimal part using a LOOP instead
+#
+# print_average_calculation_loop:
+#    blez $t2, print_average_exit_loop   # branch to exit if we have printed up-to specified decimal points
+#
+#    mul $t0, $t0, $t3                   # multiply remainder by 10
+#    div $t0, $t1                        # divide (remainder * 10) by count
+#    mflo $a0                            # put quotient in register $a0
+#    mfhi $t0                            # put remainder in register $t0
+#
+#    li $v0, 1                           # print quotient
+#    syscall
+#
+#    addi $t2, $t2, -1                   # decrement decimal point counter
+#
+#    b print_average_calculation_loop    # branch unconditionally to the print_average_calculation_loop
+#
+# print_average_exit_loop:
+
+print_average_end:
+	jr $ra                              # jump back to the main
+########################################################### 

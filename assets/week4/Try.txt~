@@ -1,0 +1,21 @@
+Static array
+
+Subprograms
+
+Read series of numbers, pass total and count
+
+Then store the numbers into static array
+
+One subprogram is enough beside main.
+
+2 dropboxes.
+    --> subprogram
+    --> subprogram + array
+    
+Subprograms and static arrays.
+
+One read array and count, one print, one compute sum, average. Linear search. In or not.
+
+Fill the buffer and then put null character.
+
+Ascending order, exit upon negative 1. Dynamic array.

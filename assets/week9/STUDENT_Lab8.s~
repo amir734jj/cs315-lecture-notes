@@ -1,0 +1,104 @@
+###########################################################
+#       Lab 9 - Stack + read string, print character
+#   Name:
+#   Date:
+#
+#   Description:
+#       complete the main subprogram. main will use system call 8 to read a string into a buffer
+#       (or character array or essentially a byte array). Then main will print the string
+#       character-by-character using print_character subprogram (NOT using system call 4). thereafter, 
+#       main will print the string character-by-character in reverse order.
+#
+#   Note:
+#       - ASCII characters are 1-byte
+#       - ASCII value for null character is: 0
+#       - ASCII value for newline character is: 10
+#       - ASCII value for tab character is: 11
+#       - system call to read string is: 8
+#       - system call to print character is: 11
+#       - if buffer size is 20, then we can only input (20 - 1) characters into character array because
+#         one character should be null terminated character (or ASCII value 0)
+#
+#   Pseudo-code
+#       print enter_p via system call 4
+#       character_array_p <-- read string via system call 8
+#
+#       *** print character_array_p character-by-character using print_character subprogram
+#       
+#       *** print character_array_p in a reversed order character-by-character using print_character subprogram
+#
+#
+#   Sample run:
+#        Enter a string: Hello World!
+#        Entered string was: Hello World!
+#        Reverse of string: !dlroW olleH
+#
+###########################################################
+#       Register Usage
+#   $t0     Holds base address of character array
+#   $t1     Holds size of character array
+#   $t2
+#   $t3
+#   $t4
+#   $t5
+#   $t6
+#   $t7
+#   $t8
+#   $t9     temporarily
+###########################################################
+		.data
+# DO NOT MODIFY		
+enter_p:                .asciiz "Enter a string: "
+string_p:               .asciiz "Entered string was: "
+reversed_p:             .asciiz "Reverse of string: "
+        
+character_array_p:      .space  20      # character array (or array of bytes)
+character_array_size_p: .word   20      # character array size
+# DO NOT MODIFY
+###########################################################
+		.text
+main:
+# TODO
+    
+    
+mainEnd:
+	li $v0, 10                      # halt
+	syscall
+###########################################################
+#       print_character subprogram
+#
+#   Subprogram description:
+#       this subprogram will receive as argument IN a character (which is 1-byte) to be printed.
+#       then subprogram passes the character to system call 11 which prints characters. if
+#       character is 0 OR 10 then subprogram will not print that character.
+#
+#   Note:
+#       this subprogram is complete, please DO NOT modify it.
+#
+###########################################################
+#       Arguments IN and OUT of subprogram
+#   $sp+0  character to be printed (IN)
+###########################################################
+#       Register Usage
+#   $t0  Holds the character to be printed
+#   $t1  Holds constant value 0
+#   $t2  Holds constant value 10
+###########################################################
+		.data
+###########################################################
+		.text
+print_character:
+	lb $t0, 0($sp)                  # load the character to be printed into $t0
+	li $t1, 0                       # set $t1 to be 0 (null character is 0)
+	li $t2, 10                      # set $t2 to be 10 (newline character is 10)
+
+	beq $t0, $t1, print_character_end   # if character is null then skip printing that character
+	beq $t0, $t2, print_character_end   # if character is newline then skip printing that character
+
+	li $v0, 11                      # print the character via system call 11
+	move $a0, $t0                   # pass the character to be printed as argument IN for system call 11
+	syscall
+
+print_character_end:
+	jr $ra                          # jump back to main
+###########################################################	

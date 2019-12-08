@@ -1,0 +1,36 @@
+Divide students into 4 groups and allow them maximum of 5 minutes work on these subprogram.
+
+Group #1: 
+    allocate_array (subprogram description):
+        This subprogram will receive as argument IN two addresses of static variable.
+        Then, it will prompt for array size and validates input to make sure array size
+        is greater than zero ( > 0). Then, it will allocate a dynamic integer array (using
+        system call 9) and store the address of dynamic array and array size into static variables
+        (using provided references). This subprogram does not return anything as argument OUT.  
+        
+Group #2:    
+    read_array (subprogram description):
+        This subprogram will receive as argument IN address and size of integer array (regardless
+        of being static or dynamic array) and then prompts for integer and read integer for each
+        array element (or index). This subprogram does not return anything as argument OUT.
+        
+Group #3:         
+    print_array (subprogram description):
+        This subprogram will receive as argument IN address and size of integer array (regardless
+        of being static or dynamic array) and then iterates through array and prints all elements
+        of array. This subprogram does not return anything as argument OUT.
+        
+Group #4: 
+    sum_array (subprogram description):
+        This subprogram will receive as argument IN address of integer array. Then initializes sum
+        to zero and then iterates through array and adds all elements of array to the sum. This
+        subprogram returns sum as argument OUT.       
+
+
+ Lab 5 components:
+    1. main (trivial)
+    2. allocate_array (group 1)
+    3. read_array (group 2)
+    4. print_array (group 3)
+    5. sum_array (group 4)
+    5. print_average (trivial)

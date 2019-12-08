@@ -1,0 +1,133 @@
+###########################################################
+#       Lab 4 - part (B)
+#   Name:
+#   Date:
+#
+#   Note:
+#       Take a screenshot of data section of QtSPIM (which would imply that entered values
+#       are correctly stored in memory) and submit it to D2L as well.     
+#  
+#   Description:
+#       Write one subprogram beside main (i.e. read_values) and main will call this subprograms:
+#       
+#       "read_values":
+#               Initialize a static array of 10 integers. Then this subprogram reads series of
+#               non-negative (greater than or equal to zero) values from the console until -1
+#               is entered. If another negative value (i.e. not -1) is entered, then print an
+#               error message, reject the negative value, and continue reading entries. If entered
+#               value is valid, then add the value to the array and then increment array base
+#               address. If index (or pointer) is equal to 10 then stop the loop. In the end,
+#               subprogram will return sum and count in registers $v0 and $v1 respectively.
+#       
+#       "main":
+#               From main, call subprogram "read_values" and store returned sum and count in static variables
+#               "sum_var_p" and "count_var_p" respectively. Then load values from static variables and 
+#               divide sum by count to get average. Then print average. Remember, before dividing sum by
+#               count, you (as a programmer) need to check if count is not zero, if count is zero then print
+#                zero for average. 
+#
+#   High level design:
+#       main:
+#           sum & count <-- read_values(null)
+#           store sum & count in static variables "sum_var_p", "count_var_p" respectively
+#           reload sum & count from static variables "sum_var_p", "count_var_p" respectively
+#           If count is not zero then divide sum by count to get average, otherwise set average to zero
+#           print average
+#
+#       read_values:
+#           initialize sum and count to 0
+#           initialize static array of size 10
+#           initialize index pointer to 0
+#
+#           while (true) {
+#               prompt for number and read number
+#
+#               if (number == -1) {
+#                   break
+#               }
+#               
+#               if (number < 0) {
+#                   print error message
+#               } 
+#                            
+#               array[index] = number
+#               index = index + 1
+#           
+#               if (index == 10) {
+#                   break
+#               }
+#
+#               sum = sum + number
+#               count = count + 1
+#           }
+#
+#           return sum & count in register $v0 and $v1 respectively
+#
+###########################################################
+#       Register Usage
+#   $t0     Holds the sum
+#   $t1     Holds the count
+#   $t3
+#   $t4
+#   $t5
+#   $t6
+#   $t7
+#   $t8
+#   $t9     temporally register
+###########################################################
+        .data
+sum_p:          .asciiz "Sum: "
+count_p:        .asciiz "Count: "        
+average_p:      .asciiz "Average: "
+nextline_p:     .asciiz "\n"
+        
+sum_var_p:      .word 0                 # sum variable initialized to 0
+count_var_p:    .word 0                 # count variable initialized to 0
+###########################################################
+        .text
+main:
+
+mainEnd:
+    li $v0, 10
+    syscall                             # Halt
+###########################################################
+#       read_values subprogram
+#
+#   Subprogram description:
+#       This subprogram reads series of non-negative (greater than or equal to zero)
+#       values from the console until -1 is entered. If another negative value
+#       (i.e. not -1) is entered, then print an error message, reject the negative
+#       value, and continue reading entries. In the end, subprogram will return sum and
+#       count in registers $v0 and $v1 respectively.
+#
+###########################################################
+#       Arguments IN and OUT of subprogram
+#   $a0
+#   $a1
+#   $a2
+#   $a3
+#   $v0     Holds sum
+#   $v1     Holds count
+#   $sp
+#   $sp+4
+#   $sp+8
+#   $sp+12
+###########################################################
+#       Register Usage
+#   $t0     Holds the sum
+#   $t1     Holds the count
+#   $t2     Holds value -1
+#   $t3     Holds value 10
+#   $t4     Holds base address of static array
+###########################################################
+        .data
+read_values_prompt_p:   .asciiz "Enter a value (-1 to stop): "
+read_values_invalid_p:  .asciiz "Invalid entry\n"
+read_values_array_p:    .word   0:10    # static array of 10 integers initialized to zero
+###########################################################
+        .text
+read_values:
+
+read_values_end:
+    jr $ra                              # jump back to the main
+###########################################################
